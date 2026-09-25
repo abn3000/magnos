@@ -1,6 +1,7 @@
 # MagnOS
 A magnet themed operating system, made for Hack Club's Stardance program. Includes a taskbar with a customizable to-do spot, draggable icons and windows, magnetism switches and several different useful apps.
 <br>
+<br>
 <img width="1920" height="919" alt="image" src="https://github.com/user-attachments/assets/b65cf5e2-cfc1-4680-91ea-44b575a4f661" />
 <br>
 <br>
