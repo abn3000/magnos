@@ -4,7 +4,6 @@ A magnet themed operating system, made for Hack Club's Stardance program. Includ
 <br>
 <img width="1920" height="919" alt="image" src="https://github.com/user-attachments/assets/b65cf5e2-cfc1-4680-91ea-44b575a4f661" />
 <br>
-<br>
 ## Test the OS
 **Demo Link**: https://abn3000.github.io/magnos/
 <br>
@@ -18,7 +17,7 @@ Welcome! Here you can find the code behind MagnOs. This operating system was fir
 - Material Usage Disclaimer: *Magnetic by Illit is included in this OS. Similarly, the icon for the Youtube channel LoverFella is used as an image. The background of the OS is the Windows "Ribbons" screensaver.*
 <br>
 <br>
-_**Thank you for visiting MagnOS!**_
+**Thank you for visiting MagnOS!**
 
 
 
