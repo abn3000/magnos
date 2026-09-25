@@ -8,7 +8,6 @@ Welcome! Here you can find the code behind MagnOs. This operating system was fir
 
 ### Disclaimers
 - AI Disclaimer: *AI was used for speeding up VS code editing through suggestions, since it can often assume what users are going to type before they do so. The VS code assistant was used for debugging the icon dragging to prevent it from opening after being dragged.*
-- <br>
 - Material Usage Disclaimer: *Magnetic by Illit is included in this OS. Similarly, the icon for the Youtube channel LoverFella is used as an image.*
 
 
