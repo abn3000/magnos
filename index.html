@@ -1,0 +1,196 @@
+
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script type="module" src="./script.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+  <body style="margin: 0; background-color: #04316A; font-family: DejaVu Sans Mono, monospace; text-align: center; padding: 20px 20px 80px; background-image: url('./fine_ribbons.gif'); background-size: cover; background-repeat: no-repeat; background-position: center; background-attachment: fixed; box-sizing: border-box; min-height: 100vh;">
+   <div id="taskbar" style="align-items: center; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; backdrop-filter: blur(10px); display: flex; justify-content: space-between; background-color: rgba(234, 27, 69, 0.8); padding: 10px; border-radius: 10px 10px 0 0; box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);">
+        <p style="margin-left: 16px;font-size: 18px; color: rgb(2, 34, 75); cursor: pointer;" id="welcomeopen">
+            <strong>MagnOS</strong>
+        </p> 
+        <p style="font-size: 18px; color:#04316A; position: absolute; left: 50%; transform: translateX(-50%); background-color: rgba(255, 255, 255, 0.25); padding: 4px 12px; border-radius: 16px;">
+            <b contenteditable = "true"> To Do: Larp a Hackathon </b>
+        </p>
+        <p id = "timeElement" style="margin-right: 16px; font-size: 18px; color: rgb(2, 34, 75)">
+            <strong>Time Loading...</strong>
+        </p>
+
+        
+   </div>
+
+
+   <div class = "window" id="welcome" data-color="blue" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+
+    <div class="color-toggle" title="Switch magnet polarity">
+      <span class="color-toggle-track"><span class="color-toggle-thumb"></span></span>
+    </div>
+    <h1 class = "windowTitle">MagnOS!</h1>
+    <img style="margin: 4px; width: 240px; height: 240px; border-radius: 10px; object-fit: cover" src="./fella.png" />
+    <h2 style="margin: 4px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); color: white">What It's All About</h2>
+    <p class = "windowText" style="margin: 4px; color: white">Hello! This is a magnet-themed operating system I made as a fun personal project. You can mess around with the icons and make them attract or repel each other. This browser OS is made for productivity, since you can group things together, and they wont stick unless you want them to!</p>
+    <p style="color: #FFFDD0"> <strong>Project GitHub:</strong> <a href="https://github.com/abn3000/magnos/"style="color: #ff204f">GitHub</a> </p>
+    <p style="color: #FFFDD0"> <strong>My LinkedIn:</strong> <a href="https://www.linkedin.com/in/amogh-bipin-nair-37888b422/" style="color: #ff204f">LinkedIn</a> </p>
+    <p style="color: #FFFDD0"> <strong>My Favourite YouTuber (not affiliated):</strong> <a href="https://www.youtube.com/c/LoverFella" style="color: #ff204f">YouTube</a> </p>
+    <p style="color: #FFFDD0; font-weight: bold;"> Hint: Click and drag anywhere on a window to move it. Watch the switch at the top left of each window. Remember, opposites attract!</p>
+    <p class = "closebutton" id="welcomeclose" >×</p>
+    
+   </div>
+
+  <div style="padding-top: 64px; cursor: pointer;">
+  <div id="notesopen" style="position: absolute; top: 24px; left: 24px; text-align: center; padding: 16px; filter: drop-shadow(0 0 8px rgb(255, 32, 79)); width: fit-content;">
+    <img src="./icon_notes.png" style="width: 64px; height: 64px; border-radius: 16px;">
+    <p style="margin: 0px; color: #fff;">MagNotes</p>
+  </div>
+</div>
+
+  <div class="window" id="notes" data-color="red" style="position: absolute; top: 50%; right: 50%; display: none;">
+    <div class="color-toggle" title="Switch magnet polarity">
+      <span class="color-toggle-track"><span class="color-toggle-thumb"></span></span>
+    </div>
+    <h1 class = "windowTitle">MagNotes</h1>
+    <p contenteditable="true" class = "windowText" style="margin: 4px; color: white">Edit me!</p>
+    <p class = "closebutton" id="notesclose" >×</p>
+    
+   </div>
+
+   <div style="padding-top: 64px; cursor: pointer;">
+  <div id="sketchopen" style="position: absolute; top: 24px; left: 204px; text-align: center; padding: 16px; filter: drop-shadow(0 0 8px rgb(255, 32, 79)); width: fit-content;">
+    <img src="./icon_sketch.png" style="width: 64px; height: 64px; border-radius: 16px;">
+    <p style="margin: 0px; color: #fff;">MagSketch</p>
+  </div>
+</div>
+
+  <div class="window" id="sketch" data-color="blue" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; background-color: #ffffff; width: 550px; height: 550px; border-radius: 8px; box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5); overflow: hidden;">
+    <div class="color-toggle" title="Switch magnet polarity">
+      <span class="color-toggle-track"><span class="color-toggle-thumb"></span></span>
+    </div>
+    <h1 class = "windowTitle">MagSketch</h1>
+    <div class="sketch-toolbar">
+      <label class="sketch-control">
+        <span>Colour</span>
+        <input style = "cursor: pointer;" type="color" id="sketchColor" value="#0a4d8c">
+      </label>
+      <label class="sketch-control">
+        <span>Size</span>
+        <input style = "cursor: pointer;" type="range" id="sketchSize" min="1" max="20" value="3">
+      </label>
+      <button id="sketchWipe" type="button">Wipe</button>
+    </div>
+    <canvas id="sketchCanvas" class="sketch-canvas"></canvas>
+    <p class = "closebutton" id="sketchclose" >×</p>
+   </div>
+
+   <div style="padding-top: 64px; cursor: pointer;">
+    <div id="calculatoropen" style="position: absolute; top: 24px; left: 384px; text-align: center; padding: 16px; filter: drop-shadow(0 0 8px rgb(255, 32, 79)); width: fit-content;">
+      <img src="./icon_calculator.png" style="width: 64px; height: 64px; border-radius: 16px; object-fit: cover;">
+      <p style="margin: 0px; color: #fff;">MagCalc</p>
+    </div>
+   </div>
+
+   <div class="window calculator-window" id="calculator" data-color="red" style="position: absolute; top: 50%; left: 50%; display: none;">
+    <div class="color-toggle" title="Switch magnet polarity">
+      <span class="color-toggle-track"><span class="color-toggle-thumb"></span></span>
+    </div>
+    <h1 class="windowTitle">MagCalc</h1> 
+    <div class="calculator-shell">
+      <div class="calculator-display-wrap">
+        <div class="calculator-mode"><span id="calculatorMode">DEG</span><span id="calculatorMemory">M</span></div>
+        <input id="calculatorDisplay" class="calculator-display" type="text" value="0" aria-label="Calculator display" readonly>
+      </div>
+      <div class="calculator-toolbar">
+        <button type="button" class="calculator-mode-button" id="calculatorAngle" title="Switch angle mode">DEG</button>
+        <button type="button" id="calculatorClear">AC</button>
+        <button type="button" id="calculatorBackspace" aria-label="Backspace">&#9003;</button>
+        <button type="button" id="calculatorMemoryClear">MC</button>
+        <button type="button" id="calculatorMemoryRecall">MR</button>
+        <button type="button" id="calculatorMemoryAdd">M+</button>
+      </div>
+      <div class="calculator-grid"> 
+        <button type="button" data-calc="sin(">sin</button><button type="button" data-calc="cos(">cos</button><button type="button" data-calc="tan(">tan</button><button type="button" data-calc="log(">log</button>
+        <button type="button" data-calc="ln(">ln</button><button type="button" data-calc="sqrt(">√</button><button type="button" data-calc="(">(</button><button type="button" data-calc=")">)</button>
+        <button type="button" data-calc="pi">π</button><button type="button" data-calc="e">e</button><button type="button" data-calc="^2">x²</button><button type="button" data-calc="^">xʸ</button>
+        <button type="button" data-calc="7">7</button><button type="button" data-calc="8">8</button><button type="button" data-calc="9">9</button><button type="button" class="calculator-operator" data-calc="/">÷</button>
+        <button type="button" data-calc="4">4</button><button type="button" data-calc="5">5</button><button type="button" data-calc="6">6</button><button type="button" class="calculator-operator" data-calc="*">×</button>
+        <button type="button" data-calc="1">1</button><button type="button" data-calc="2">2</button><button type="button" data-calc="3">3</button><button type="button" class="calculator-operator" data-calc="-">−</button>
+        <button type="button" data-calc="0">0</button><button type="button" data-calc=".">.</button><button type="button" data-calc="%">%</button><button type="button" class="calculator-operator" data-calc="+">+</button>
+        <button type="button" class="calculator-equals" id="calculatorEquals">=</button>
+      </div>
+    </div>
+    <p class="closebutton" id="calculatorclose">×</p>
+   </div>
+
+   <div style="padding-top: 64px; cursor: pointer;">
+    <div id="musicopen" style="position: absolute; top: 24px; left: 564px; text-align: center; padding: 16px; filter: drop-shadow(0 0 8px rgb(255, 32, 79)); width: fit-content;">
+      <img src="./icon_music.png" style="width: 64px; height: 64px; border-radius: 16px; object-fit: cover;">
+      <p style="margin: 0px; color: #fff;">MagMusic</p>
+    </div>
+   </div>
+
+   <div class="window music-window" id="music" data-color="blue" style="position: absolute; top: 50%; left: 50%; display: none;">
+    <div class="color-toggle" title="Switch magnet polarity">
+      <span class="color-toggle-track"><span class="color-toggle-thumb"></span></span>
+    </div>
+    <h1 class="windowTitle">MagMusic</h1>
+    <div class="music-player">
+      <img class="music-cover" src="./song_cover.png" alt="Magnetic cover art">
+      <div class="music-track-info">
+        <p class="music-kicker">Now Playing</p>
+        <h2>Magnetic</h2>
+        <p>ILLIT</p>
+      </div>
+      <audio id="musicAudio" preload="metadata" src="./Song.mp3"></audio>
+      <div class="music-progress-row">
+        <span id="musicCurrentTime">0:00</span>
+        <input id="musicProgress" type="range" min="0" max="100" value="0" step="0.1" aria-label="Song progress">
+        <span id="musicDuration">0:00</span>
+      </div>
+      <div class="music-controls">
+        <button type="button" id="musicBack" aria-label="Back 10 seconds" title="Back 10 seconds">↶</button>
+        <button type="button" class="music-play" id="musicPlay" aria-label="Play Magnetic" title="Play">▶</button>
+        <button type="button" id="musicForward" aria-label="Forward 10 seconds" title="Forward 10 seconds">↷</button>
+      </div>
+      <div class="music-volume">
+        <button type="button" id="musicMute" aria-label="Mute" title="Mute">🔊</button>
+        <input id="musicVolume" type="range" min="0" max="1" value="0.75" step="0.01" aria-label="Volume">
+      </div>
+    </div>
+    <p class="closebutton" id="musicclose">×</p>
+   </div>
+
+   <div style="padding-top: 64px; cursor: pointer;">
+    <div id="searchopen" style="position: absolute; top: 24px; left: 744px; text-align: center; padding: 16px; filter: drop-shadow(0 0 8px rgb(255, 32, 79)); width: fit-content;">
+      <img src="./icon_search.png" style="width: 64px; height: 64px; border-radius: 16px; object-fit: cover;">
+      <p style="margin: 0px; color: #fff;">MagSearch</p>
+    </div>
+   </div>
+
+   <div class="window search-window" id="search" data-color="red" style="position: absolute; top: 50%; left: 50%; display: none;">
+    <div class="color-toggle" title="Switch magnet polarity">
+      <span class="color-toggle-track"><span class="color-toggle-thumb"></span></span>
+    </div>
+    <h1 class="windowTitle">MagSearch</h1>
+    <div class="search-shell">
+      <form class="search-form" id="searchForm" action="https://www.google.com/search" method="get" target="_blank">
+        <label class="search-query">
+          <span class="search-symbol">⌕</span>
+          <input id="searchInput" name="q" type="search" placeholder="Search Google" autocomplete="off" aria-label="Search Google">
+        </label>
+        <button type="submit">Search</button>
+      </form>
+    </div> 
+    
+    <p class="closebutton" id="searchclose">×</p>
+   </div>
+
+   <script src="script.js"></script>
+   
+
+  </body>
+
+</html>
+
