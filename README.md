@@ -6,6 +6,7 @@ A magnet themed operating system, made for Hack Club's Stardance program. Includ
 ## Test the OS
 **Demo Link**: https://abn3000.github.io/magnos/
 <br>
+<br>
 ## Information
 Welcome! Here you can find the code behind MagnOs. This operating system was first made using the JamOS guide from Hack Club. Now, it has been expanded to include magnetism function, which allows grouping of the windows. Swap the magnetic colors to snap windows together, allowing you to create blocks of similar windows that stay in one place. Be careful with the rule of opposites attract, since two windows with the same border colour will repel each other if brought together. MagnOS includes notes, a sketchpad, a scientific calculator, a music player, and more!
 <br>
