@@ -18,7 +18,7 @@ Welcome! Here you can find the code behind MagnOs. This operating system was fir
 - Material Usage Disclaimer: *Magnetic by Illit is included in this OS. Similarly, the icon for the Youtube channel LoverFella is used as an image. The background of the OS is the Windows "Ribbons" screensaver.*
 <br>
 <br>
-### Thank you for visiting MagnOS!
+_**Thank you for visiting MagnOS!**_
 
 
 
