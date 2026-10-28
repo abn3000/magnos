@@ -163,6 +163,47 @@ function openWindow(element) {
   element.style.transform = "translate(-50%, -50%)"
 }
 
+function bindOpenAction(openButton, windowElement, onOpen) {
+  var dragThreshold = 8;
+  var startX = 0;
+  var startY = 0;
+  var pointerMoved = false;
+
+  function handlePointerMove(event) {
+    if (Math.abs(event.clientX - startX) > dragThreshold || Math.abs(event.clientY - startY) > dragThreshold) {
+      pointerMoved = true;
+    }
+  }
+
+  function stopTrackingPointer() {
+    document.removeEventListener("pointermove", handlePointerMove);
+    document.removeEventListener("pointerup", stopTrackingPointer);
+  }
+
+  openButton.addEventListener("pointerdown", function (event) {
+    startX = event.clientX;
+    startY = event.clientY;
+    pointerMoved = false;
+    document.addEventListener("pointermove", handlePointerMove);
+    document.addEventListener("pointerup", stopTrackingPointer);
+  });
+
+  openButton.addEventListener("click", function (event) {
+    if (pointerMoved) {
+      event.preventDefault();
+      event.stopPropagation();
+      pointerMoved = false;
+      return;
+    }
+
+    if (typeof onOpen === "function") {
+      onOpen();
+    } else {
+      openWindow(windowElement);
+    }
+  });
+}
+
 var welcomeScreenClose = document.querySelector("#welcomeclose")
 var welcomeScreenOpen = document.querySelector("#welcomeopen")
 
@@ -170,9 +211,7 @@ welcomeScreenClose.addEventListener("click", function() {
   closeWindow(welcomeScreen);
 });
 
-welcomeScreenOpen.addEventListener("click", function() {
-  openWindow(welcomeScreen);
-});
+bindOpenAction(welcomeScreenOpen, welcomeScreen);
 
 var notesClose = document.querySelector("#notesclose")
 var notesOpen = document.querySelector("#notesopen")
@@ -182,7 +221,7 @@ notesClose.addEventListener("click", function() {
   deselectIcon(notesOpen);
 });
 
-notesOpen.addEventListener("click", function() {
+bindOpenAction(notesOpen, notes, function() {
   openWindow(notes);
   selectIcon(notesOpen);
 });
@@ -195,7 +234,7 @@ sketchClose.addEventListener("click", function() {
   deselectIcon(sketchOpen);
 });
 
-sketchOpen.addEventListener("click", function() {
+bindOpenAction(sketchOpen, sketch, function() {
   openWindow(sketch);
   selectIcon(sketchOpen);
   context.clearRect(0, 0, sketchCanvas.width, sketchCanvas.height);
@@ -283,7 +322,10 @@ if (!window.magnosCalculatorInitialized) {
   document.querySelector("#calculatorMemoryAdd").addEventListener("click", function () { try { calculatorMemoryValue += calculateExpression(calculatorDisplay.value); calculatorMemory.textContent = "M*"; } catch (error) { showCalculatorError(); } });
   document.addEventListener("keydown", function (event) { if (calculator.style.display === "none") return; if (/[0-9.+\-*/%^()]/.test(event.key)) updateCalculatorDisplay(event.key); if (event.key === "Enter") document.querySelector("#calculatorEquals").click(); if (event.key === "Backspace") document.querySelector("#calculatorBackspace").click(); if (event.key === "Escape") document.querySelector("#calculatorClear").click(); });
   calculatorClose.addEventListener("click", function () { closeWindow(calculator); deselectIcon(calculatorOpen); });
-  calculatorOpen.addEventListener("click", function () { openWindow(calculator); selectIcon(calculatorOpen); });
+  bindOpenAction(calculatorOpen, calculator, function () {
+    openWindow(calculator);
+    selectIcon(calculatorOpen);
+  });
 }
 
 // Don't even get me started on the music
@@ -356,7 +398,10 @@ if (!window.magnosMusicInitialized) {
     musicVolume.dispatchEvent(new Event("input"));
   });
   musicClose.addEventListener("click", function () { closeWindow(music); deselectIcon(musicOpen); musicAudio.pause(); });
-  musicOpen.addEventListener("click", function () { openWindow(music); selectIcon(musicOpen); });
+  bindOpenAction(musicOpen, music, function () {
+    openWindow(music);
+    selectIcon(musicOpen);
+  });
 }
 
 if (!window.magnosSearchInitialized) {
@@ -370,7 +415,7 @@ if (!window.magnosSearchInitialized) {
     closeWindow(search);
     deselectIcon(searchOpen);
   });
-  searchOpen.addEventListener("click", function () {
+  bindOpenAction(searchOpen, search, function () {
     openWindow(search);
     selectIcon(searchOpen);
     searchInput.focus();
@@ -578,7 +623,7 @@ if (!window.magnosMagZenInitialized) {
     resizeMagZenCanvas();
     resetMagZenParticles();
   });
-  magzenOpen.addEventListener("click", function () {
+  bindOpenAction(magzenOpen, magzen, function () {
     openWindow(magzen);
     selectIcon(magzenOpen);
     startMagZen();
