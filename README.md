@@ -8,4 +8,5 @@ MagZen is an interactive iron-filings visualizer: move your cursor across its ca
 Disclaimer: AI was used relatively minimally for speeding up VS code editing through suggestions, as well as for debugging the icon dragging to prevent it from opening after being dragged. 
 
 ## MagnOS in Action!
-<img width="1889" height="932" alt="image" src="https://github.com/user-attachments/assets/da063595-f83d-48e1-9515-61df5e79bbc7" />
+<img width="1920" height="952" alt="image" src="https://github.com/user-attachments/assets/f18b7890-7c71-4ce7-a8fa-81fdf2bda701" />
+
