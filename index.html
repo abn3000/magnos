@@ -4,6 +4,8 @@
 <html>
 
 <head>
+  <title>MagnOS</title>
+  <link rel="icon" type="image/png" href="./favicon.png" />
   <script type="module" src="./script.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
@@ -32,7 +34,7 @@
     <h1 class = "windowTitle">MagnOS!</h1>
     <img style="margin: 4px; width: 240px; height: 240px; border-radius: 10px; object-fit: cover" src="./fella.png" />
     <h2 style="margin: 4px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); color: white">What It's All About</h2>
-    <p class = "windowText" style="margin: 4px; color: white">Hello! This is a magnet-themed operating system I made as a fun personal project. You can mess around with the icons and make them attract or repel each other. This browser OS is made for productivity, since you can group things together, and they wont stick unless you want them to!</p>
+    <p class = "windowText" style="margin: 4px; color: white">Hello! This is a magnet-themed operating system I made as a fun personal project for Stardance. You can mess around with the icons and make them attract or repel each other. This browser OS is made for productivity, since you can group things together, and they wont stick unless you want them to!</p>
     <p style="color: #FFFDD0"> <strong>Project GitHub:</strong> <a href="https://github.com/abn3000/magnos/"style="color: #ff204f">GitHub</a> </p>
     <p style="color: #FFFDD0"> <strong>My LinkedIn:</strong> <a href="https://www.linkedin.com/in/amogh-bipin-nair-37888b422/" style="color: #ff204f">LinkedIn</a> </p>
     <p style="color: #FFFDD0"> <strong>My Favourite YouTuber (not affiliated):</strong> <a href="https://www.youtube.com/c/LoverFella" style="color: #ff204f">YouTube</a> </p>
@@ -102,6 +104,7 @@
         <div class="calculator-mode"><span id="calculatorMode">DEG</span><span id="calculatorMemory">M</span></div>
         <input id="calculatorDisplay" class="calculator-display" type="text" value="0" aria-label="Calculator display" readonly>
       </div>
+
       <div class="calculator-toolbar">
         <button type="button" class="calculator-mode-button" id="calculatorAngle" title="Switch angle mode">DEG</button>
         <button type="button" id="calculatorClear">AC</button>
@@ -159,7 +162,7 @@
         <input id="musicVolume" type="range" min="0" max="1" value="0.75" step="0.01" aria-label="Volume">
       </div>
     </div>
-    <p class="closebutton" id="musicclose">×</p>
+    <p class="closebutton" id="musicclose">×</p> 
    </div>
 
    <div style="padding-top: 64px; cursor: pointer;">
@@ -167,6 +170,37 @@
       <img src="./icon_search.png" style="width: 64px; height: 64px; border-radius: 16px; object-fit: cover;">
       <p style="margin: 0px; color: #fff;">MagSearch</p>
     </div>
+   </div>
+
+   <div style="padding-top: 64px; cursor: pointer;">
+    <div id="magzenopen" style="position: absolute; top: 164px; left: 24px; text-align: center; padding: 16px; filter: drop-shadow(0 0 8px rgb(255, 32, 79)); width: fit-content;">
+      <img src="./icon_zen.png" style="width: 64px; height: 64px; border-radius: 16px; object-fit: cover;" alt="">
+      <p style="margin: 0px; color: #fff;">MagZen</p>
+    </div>
+   </div>
+
+   <div class="window magzen-window" id="magzen" data-color="blue" style="position: absolute; top: 50%; left: 50%; display: none;">
+    <div class="color-toggle" title="Switch magnet polarity">
+      <span class="color-toggle-track"><span class="color-toggle-thumb"></span></span>
+    </div>
+    <h1 class="windowTitle">MagZen</h1>
+    <div class="magzen-stage">
+      <canvas id="magzenCanvas" class="magzen-canvas" aria-label="Interactive iron filings responding to your cursor"></canvas>
+      <div class="magzen-stage-label"><span class="magzen-live-dot"></span><span id="magzenFieldLabel">Attract Mode</span></div>
+    </div>
+    <div class="magzen-controls">
+      <label class="magzen-strength">
+        <span>Strength</span>
+        <input id="magzenStrength" type="range" min="25" max="200" value="100" step="25" aria-label="Magnet force strength" aria-valuetext="100%">
+        <output id="magzenStrengthValue" for="magzenStrength">100%</output>
+      </label>
+      <div class="magzen-actions">
+        <span class="magzen-count"><span id="magzenCount">200</span> filings</span>
+        <button type="button" id="magzenPause" aria-pressed="false">Pause</button>
+        <button type="button" id="magzenReset">Reset</button>
+      </div>
+    </div>
+    <p class="closebutton" id="magzenclose">×</p>
    </div>
 
    <div class="window search-window" id="search" data-color="red" style="position: absolute; top: 50%; left: 50%; display: none;">
@@ -193,4 +227,3 @@
   </body>
 
 </html>
-

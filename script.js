@@ -1,8 +1,31 @@
 
 // i dont know if comments are mandatory for stardance, but this is good practice for ics4u0. btw the code for dragElement is from the guide
+// i still don't know why the time loading thing is necessary or even if it is for actual users launching the github pages, but i needed it for testing
 
 setInterval(function () {
   document.querySelector("#timeElement").innerHTML = "<strong>" + new Date().toLocaleString("en-CA") + "</strong>" }, 1000);
+
+function setWindowPosition(element, left, top) {
+  var rect = element.getBoundingClientRect();
+  var deltaX = left - element.offsetLeft;
+  var deltaY = top - element.offsetTop;
+  var minDeltaX = 1 - rect.left;
+  var maxDeltaX = window.innerWidth - 1 - rect.right;
+  var minDeltaY = 1 - rect.top;
+  var maxDeltaY = window.innerHeight - 1 - rect.bottom;
+
+  deltaX = minDeltaX > maxDeltaX ? minDeltaX : Math.max(minDeltaX, Math.min(maxDeltaX, deltaX));
+  deltaY = minDeltaY > maxDeltaY ? minDeltaY : Math.max(minDeltaY, Math.min(maxDeltaY, deltaY));
+
+  element.style.left = (element.offsetLeft + deltaX) + "px";
+  element.style.top = (element.offsetTop + deltaY) + "px";
+}
+
+window.addEventListener("resize", function () {
+  document.querySelectorAll(".window").forEach(function (element) {
+    setWindowPosition(element, element.offsetLeft, element.offsetTop);
+  });
+});
 
   // Make the DIV element draggable:
 dragElement(document.getElementById("welcome"));  
@@ -16,6 +39,8 @@ dragElement(document.getElementById("musicopen"));
 dragElement(document.getElementById("music"));
 dragElement(document.getElementById("searchopen"));
 dragElement(document.getElementById("search"));
+dragElement(document.getElementById("magzenopen"));
+dragElement(document.getElementById("magzen"));
 
 // Step 1: Define a function called `dragElement` that makes an HTML element draggable.
 function dragElement(element) {
@@ -68,6 +93,9 @@ function dragElement(element) {
       if (element.id === "search" && target.closest && target.closest(".search-shell")) {
         return;
       }
+      if (element.id === "magzen" && target.closest && (target.closest(".magzen-stage") || target.closest(".magzen-controls"))) {
+        return;
+      }
       if (target.closest && target.closest(".color-toggle")) {
         return; // Let the magnet polarity switch handle its own click
       }
@@ -97,12 +125,19 @@ function dragElement(element) {
       wasDragged = true;
     }
 
+    if (window.magnetConstrainDrag) {
+      var boundedDelta = window.magnetConstrainDrag(element, currentX, currentY);
+      currentX = boundedDelta.dx;
+      currentY = boundedDelta.dy;
+    }
+
     // Step 11: Update the element's new position by modifying its `top` and `left` CSS properties.
-    element.style.top = (element.offsetTop - currentY) + "px";
-    element.style.left = (element.offsetLeft - currentX) + "px";
+    var previousLeft = element.offsetLeft;
+    var previousTop = element.offsetTop;
+    setWindowPosition(element, previousLeft - currentX, previousTop - currentY);
 
     if (window.magnetHandleDrag) {
-      window.magnetHandleDrag(element, currentX, currentY);
+      window.magnetHandleDrag(element, previousLeft - element.offsetLeft, previousTop - element.offsetTop);
     }
   }
 
@@ -121,7 +156,7 @@ function closeWindow(element) {
 
 function openWindow(element) {
   element.style.display = "flex"
-  biggestIndex++;  // Increment biggestIndex by 1
+  biggestIndex++;  // biggestIndex up by 1
   element.style.zIndex = biggestIndex;
   element.style.top = "50%"
   element.style.left = "50%"
@@ -203,12 +238,15 @@ addWindowTapHandling(sketch)
 addWindowTapHandling(document.getElementById("calculator"))
 addWindowTapHandling(document.getElementById("music"))
 addWindowTapHandling(document.getElementById("search"))
+addWindowTapHandling(document.getElementById("magzen"))
+
 
 function handleWindowTap(element) {
-  biggestIndex++;  // +1ing it
+  biggestIndex++;  
   element.style.zIndex = biggestIndex;
 }
 
+// Yeah the calculator makes a buncha stuff open hopefully that will never cause any issues
 if (!window.magnosCalculatorInitialized) {
   window.magnosCalculatorInitialized = true;
   var calculator = document.querySelector("#calculator");
@@ -248,6 +286,7 @@ if (!window.magnosCalculatorInitialized) {
   calculatorOpen.addEventListener("click", function () { openWindow(calculator); selectIcon(calculatorOpen); });
 }
 
+// Don't even get me started on the music
 if (!window.magnosMusicInitialized) {
   window.magnosMusicInitialized = true;
   var music = document.querySelector("#music");
@@ -338,6 +377,225 @@ if (!window.magnosSearchInitialized) {
   });
 }
 
+// I used an open-source physics handler to make the filings move independently, and then made them circle the cursor
+// This isn't technically accurate to how magnetism works, but it's fun
+
+if (!window.magnosMagZenInitialized) {
+  window.magnosMagZenInitialized = true;
+
+  var magzen = document.querySelector("#magzen");
+  var magzenOpen = document.querySelector("#magzenopen");
+  var magzenClose = document.querySelector("#magzenclose");
+  var magzenCanvas = document.querySelector("#magzenCanvas");
+  var magzenContext = magzenCanvas.getContext("2d");
+  var magzenPause = document.querySelector("#magzenPause");
+  var magzenReset = document.querySelector("#magzenReset");
+  var magzenFieldLabel = document.querySelector("#magzenFieldLabel");
+  var magzenStrength = document.querySelector("#magzenStrength");
+  var magzenStrengthValue = document.querySelector("#magzenStrengthValue");
+  var magzenParticles = [];
+  var magzenWidth = 0;
+  var magzenHeight = 0;
+  var magzenPointer = { x: 0, y: 0, active: false };
+  var magzenMagnet = { x: 0, y: 0 };
+  var magzenFrame = 0;
+  var magzenRunning = false;
+  var magzenRepel = false;
+  var magzenForceStrength = Number(magzenStrength.value) / 100;
+  var MAGZEN_PARTICLE_COUNT = 200;
+
+  function resetMagZenParticles() {
+    magzenParticles = Array.from({ length: MAGZEN_PARTICLE_COUNT }, function () {
+      return {
+        x: Math.random() * magzenWidth,
+        y: Math.random() * magzenHeight,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        length: 2 + Math.random() * 4,
+        hue: Math.random() < 0.18 ? 42 + Math.random() * 18 : 185 + Math.random() * 28
+      };
+    });
+    magzenContext.clearRect(0, 0, magzenWidth, magzenHeight);
+  }
+
+  function resizeMagZenCanvas() {
+    var rect = magzenCanvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    var ratio = Math.min(window.devicePixelRatio || 1, 2);
+    var nextWidth = Math.round(rect.width * ratio);
+    var nextHeight = Math.round(rect.height * ratio);
+    if (magzenCanvas.width === nextWidth && magzenCanvas.height === nextHeight) return;
+    magzenCanvas.width = nextWidth;
+    magzenCanvas.height = nextHeight;
+    magzenContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+    magzenWidth = rect.width;
+    magzenHeight = rect.height;
+    magzenMagnet.x = magzenWidth / 2;
+    magzenMagnet.y = magzenHeight / 2;
+    resetMagZenParticles();
+  }
+
+  function magZenFieldAt(x, y, centerX, centerY) {
+    var dx = x - centerX;
+    var dy = y - centerY;
+    var radiusSquared = dx * dx + dy * dy + 180;
+    var scale = 1 / Math.pow(radiusSquared, 1.5);
+    var fieldX = 3 * dx * dy * scale;
+    var fieldY = (2 * dy * dy - dx * dx + 180) * scale;
+    var magnitude = Math.hypot(fieldX, fieldY) || 1;
+    return { x: fieldX / magnitude, y: fieldY / magnitude };
+  }
+
+  function renderMagZen(timestamp) {
+    if (!magzenRunning) return;
+    if (magzen.style.display === "none") {
+      magzenFrame = requestAnimationFrame(renderMagZen);
+      return;
+    }
+    if (!magzenWidth || !magzenHeight) resizeMagZenCanvas();
+    var centerX = magzenPointer.active ? magzenPointer.x : magzenWidth / 2;
+    var centerY = magzenPointer.active ? magzenPointer.y : magzenHeight / 2;
+    var frameScale = Math.min((timestamp - (renderMagZen.lastTime || timestamp)) / 16.67, 2);
+    renderMagZen.lastTime = timestamp;
+    magzenMagnet.x += (centerX - magzenMagnet.x) * 0.12;
+    magzenMagnet.y += (centerY - magzenMagnet.y) * 0.12;
+
+    var ctx = magzenContext;
+    ctx.fillStyle = "rgba(3, 16, 32, .2)";
+    ctx.fillRect(0, 0, magzenWidth, magzenHeight);
+
+    magzenParticles.forEach(function (particle) {
+      var dx = magzenMagnet.x - particle.x;
+      var dy = magzenMagnet.y - particle.y;
+      var distance = Math.hypot(dx, dy) + 0.001;
+      var influence = 125 / (distance + 125);
+      if (magzenRepel) {
+        var repel = 0.07 * magzenForceStrength * influence * frameScale;
+        particle.vx -= dx / distance * repel;
+        particle.vy -= dy / distance * repel;
+      } else {
+        var pull = 0.045 * magzenForceStrength * influence * frameScale;
+        var swirl = 0.085 * magzenForceStrength * influence * frameScale;
+        particle.vx += (dx / distance * pull - dy / distance * swirl);
+        particle.vy += (dy / distance * pull + dx / distance * swirl);
+      }
+      particle.vx *= Math.pow(0.975, frameScale);
+      particle.vy *= Math.pow(0.975, frameScale);
+      var speed = Math.hypot(particle.vx, particle.vy);
+      var maxSpeed = magzenRepel ? 3.2 : 2.6;
+      if (speed > maxSpeed) {
+        particle.vx = particle.vx / speed * maxSpeed;
+        particle.vy = particle.vy / speed * maxSpeed;
+      }
+      particle.x += particle.vx * frameScale;
+      particle.y += particle.vy * frameScale;
+
+      if (particle.x < -8) particle.x = magzenWidth + 4;
+      if (particle.x > magzenWidth + 8) particle.x = -4;
+      if (particle.y < -8) particle.y = magzenHeight + 4;
+      if (particle.y > magzenHeight + 8) particle.y = -4;
+
+      var field = magZenFieldAt(particle.x, particle.y, magzenMagnet.x, magzenMagnet.y);
+      var halfLength = particle.length / 2;
+      ctx.beginPath();
+      ctx.moveTo(particle.x - field.x * halfLength, particle.y - field.y * halfLength);
+      ctx.lineTo(particle.x + field.x * halfLength, particle.y + field.y * halfLength);
+      ctx.lineWidth = 1 + influence * 0.8;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "hsla(" + particle.hue + ", 88%, " + (72 + influence * 18) + "%, " + (0.58 + influence * 0.35) + ")";
+      ctx.shadowBlur = influence > 0.3 ? 5 : 1;
+      ctx.shadowColor = "hsla(" + particle.hue + ", 100%, 72%, .65)";
+      ctx.stroke();
+    });
+    if (magzenPointer.active) {
+      ctx.beginPath();
+      ctx.arc(magzenPointer.x, magzenPointer.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "#ff405b";
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = "#ff405b";
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    magzenFrame = requestAnimationFrame(renderMagZen);
+  }
+
+  function startMagZen() {
+    if (magzenRunning) return;
+    resizeMagZenCanvas();
+    magzenRunning = true;
+    magzenPause.textContent = "Pause";
+    magzenPause.setAttribute("aria-pressed", "false");
+    magzenFrame = requestAnimationFrame(renderMagZen);
+  }
+
+  function pauseMagZen() {
+    magzenRunning = false;
+    cancelAnimationFrame(magzenFrame);
+    magzenPause.textContent = "Resume";
+    magzenPause.setAttribute("aria-pressed", "true");
+  }
+
+  function setMagZenPointer(event) {
+    var rect = magzenCanvas.getBoundingClientRect();
+    magzenPointer.x = event.clientX - rect.left;
+    magzenPointer.y = event.clientY - rect.top;
+    magzenPointer.active = true;
+  }
+
+  magzenCanvas.addEventListener("click", function (event) {
+    setMagZenPointer(event);
+    magzenMagnet.x = magzenPointer.x;
+    magzenMagnet.y = magzenPointer.y;
+    magzenRepel = !magzenRepel;
+    magzenFieldLabel.textContent = magzenRepel ? "Repel Mode" : "Attract Mode";
+    magzenFieldLabel.parentElement.classList.toggle("magzen-repelling", magzenRepel);
+    if (magzenRepel) {
+      magzenParticles.forEach(function (particle) {
+        var dx = particle.x - magzenMagnet.x;
+        var dy = particle.y - magzenMagnet.y;
+        var distance = Math.hypot(dx, dy) + 0.001;
+        var burst = 1.5 * magzenForceStrength * 180 / (distance + 180);
+        particle.vx += dx / distance * burst;
+        particle.vy += dy / distance * burst;
+      });
+    }
+  });
+  magzenCanvas.addEventListener("pointermove", setMagZenPointer);
+  magzenCanvas.addEventListener("pointerdown", setMagZenPointer);
+  magzenCanvas.addEventListener("pointerleave", function () { magzenPointer.active = false; });
+  magzenCanvas.addEventListener("pointercancel", function () { magzenPointer.active = false; });
+  magzenStrength.addEventListener("input", function () {
+    magzenForceStrength = Number(magzenStrength.value) / 100;
+    magzenStrengthValue.value = magzenStrength.value + "%";
+    magzenStrengthValue.textContent = magzenStrength.value + "%";
+    magzenStrength.setAttribute("aria-valuetext", magzenStrength.value + "%");
+  });
+  magzenPause.addEventListener("click", function () {
+    if (magzenRunning) pauseMagZen();
+    else startMagZen();
+  });
+  magzenReset.addEventListener("click", function () {
+    resizeMagZenCanvas();
+    resetMagZenParticles();
+  });
+  magzenOpen.addEventListener("click", function () {
+    openWindow(magzen);
+    selectIcon(magzenOpen);
+    startMagZen();
+  });
+  magzenClose.addEventListener("click", function () {
+    closeWindow(magzen);
+    deselectIcon(magzenOpen);
+    pauseMagZen();
+  });
+
+  if (typeof ResizeObserver !== "undefined") {
+    new ResizeObserver(resizeMagZenCanvas).observe(document.querySelector(".magzen-stage"));
+  } else {
+    window.addEventListener("resize", resizeMagZenCanvas);
+  }
+}
+
 var sketchCanvas = document.querySelector("#sketchCanvas");
 var sketchColorInput = document.querySelector("#sketchColor");
 var sketchSizeInput = document.querySelector("#sketchSize");
@@ -420,16 +678,19 @@ if (sketchCanvas) {
 if (!window.magnosMagnetInitialized) {
   window.magnosMagnetInitialized = true;
 
-  var MAGNET_IDS = ["welcome", "notes", "sketch", "calculator", "music", "search"];
+  var MAGNET_IDS = ["welcome", "notes", "sketch", "calculator", "music", "search", "magzen"];
   var SNAP_DISTANCE = 22;    // px - how close touching edges must be to link
   var ALIGN_THRESHOLD = 6;   // px - tight tolerance for smart-guide alignment
   var REPEL_GAP = 8;         // px - minimum breathing room enforced between like poles
   var REPEL_KICK = 26;       // px - extra "clear away" distance on top of the gap
+  var SNAP_SOUND_START = 0.57;
 
   var magnetColors = {};
   var magnetAttachments = {};
   // smash 6 when??
   var switchsnap = new Audio("./snap.mp3");
+  switchsnap.preload = "auto";
+  switchsnap.load();
 
   MAGNET_IDS.forEach(function (id) {
     var el = document.getElementById(id);
@@ -467,7 +728,7 @@ if (!window.magnosMagnetInitialized) {
   function linkWindows(a, b) {
     magnetAttachments[a].add(b);
     magnetAttachments[b].add(a);
-    switchsnap.currentTime = 0;
+    switchsnap.currentTime = SNAP_SOUND_START;
     switchsnap.play().catch(function () {});
     [a, b].forEach(function (id) {
       var el = document.getElementById(id);
@@ -494,6 +755,30 @@ if (!window.magnosMagnetInitialized) {
     }
     return group;
   }
+
+  window.magnetConstrainDrag = function (element, dx, dy) {
+    if (MAGNET_IDS.indexOf(element.id) === -1) return { dx: dx, dy: dy };
+
+    var group = [element].concat(getAttachedGroup(element.id).map(function (id) {
+      return document.getElementById(id);
+    }).filter(Boolean));
+    var minDeltaX = -Infinity;
+    var maxDeltaX = Infinity;
+    var minDeltaY = -Infinity;
+    var maxDeltaY = Infinity;
+
+    group.forEach(function (member) {
+      var rect = member.getBoundingClientRect();
+      minDeltaX = Math.max(minDeltaX, 1 - rect.left);
+      maxDeltaX = Math.min(maxDeltaX, window.innerWidth - 1 - rect.right);
+      minDeltaY = Math.max(minDeltaY, 1 - rect.top);
+      maxDeltaY = Math.min(maxDeltaY, window.innerHeight - 1 - rect.bottom);
+    });
+
+    var moveX = minDeltaX > maxDeltaX ? 0 : Math.max(minDeltaX, Math.min(maxDeltaX, -dx));
+    var moveY = minDeltaY > maxDeltaY ? 0 : Math.max(minDeltaY, Math.min(maxDeltaY, -dy));
+    return { dx: -moveX, dy: -moveY };
+  };
 
   // Smart aligning: the edges and centres can both align
   function checkAlignment(id) {
@@ -551,11 +836,11 @@ if (!window.magnosMagnetInitialized) {
 
     var guides = [];
     if (bestX) {
-      el.style.left = (el.offsetLeft + (bestX.targetLeft - rect.left)) + "px";
+      setWindowPosition(el, el.offsetLeft + (bestX.targetLeft - rect.left), el.offsetTop);
       guides.push({ type: "v", coord: bestX.coord });
     }
     if (bestY) {
-      el.style.top = (el.offsetTop + (bestY.targetTop - rect.top)) + "px";
+      setWindowPosition(el, el.offsetLeft, el.offsetTop + (bestY.targetTop - rect.top));
       guides.push({ type: "h", coord: bestY.coord });
     }
     return guides;
@@ -600,8 +885,7 @@ if (!window.magnosMagnetInitialized) {
       }
 
       if (snapDX !== null || snapDY !== null) {
-        if (snapDX !== null) el.style.left = (el.offsetLeft + snapDX) + "px";
-        if (snapDY !== null) el.style.top = (el.offsetTop + snapDY) + "px";
+        setWindowPosition(el, el.offsetLeft + (snapDX || 0), el.offsetTop + (snapDY || 0));
         rect = el.getBoundingClientRect();
         linkWindows(id, otherId);
       }
@@ -665,8 +949,7 @@ if (!window.magnosMagnetInitialized) {
         var gEl = document.getElementById(gid);
         if (!gEl) return;
         gEl.classList.add("magnet-repelled");
-        gEl.style.left = (gEl.offsetLeft + deltaLeft) + "px";
-        gEl.style.top = (gEl.offsetTop + deltaTop) + "px";
+        setWindowPosition(gEl, gEl.offsetLeft + deltaLeft, gEl.offsetTop + deltaTop);
         setTimeout(function () { gEl.classList.remove("magnet-repelled"); }, 320);
       });
     });
@@ -684,8 +967,7 @@ if (!window.magnosMagnetInitialized) {
       visited.add(id);
       var partnerEl = document.getElementById(id);
       if (partnerEl) {
-        partnerEl.style.top = (partnerEl.offsetTop - dy) + "px";
-        partnerEl.style.left = (partnerEl.offsetLeft - dx) + "px";
+        setWindowPosition(partnerEl, partnerEl.offsetLeft - dx, partnerEl.offsetTop - dy);
       }
       magnetAttachments[id].forEach(function (nextId) {
         if (!visited.has(nextId)) queue.push(nextId);
@@ -703,7 +985,6 @@ if (!window.magnosResizeInitialized) {
 
   var RESIZE_MIN_W = 260;
   var RESIZE_MIN_H = 180;
-
 // never eat soggy wheat
 // this below code does the resizing of windows, it was inspired by the guide originally asking me to make a handle to drag???
 // i thought that was bad for just dragging and made the whole window draggable, but resizing needs the corners to be handles
@@ -753,8 +1034,7 @@ if (!window.magnosResizeInitialized) {
 
           win.style.width = w + "px";
           win.style.height = h + "px";
-          win.style.left = left + "px";
-          win.style.top = top + "px";
+          setWindowPosition(win, left, top);
 
           if (win.id === "sketch" && typeof resizeCanvas === "function") resizeCanvas();
         }
@@ -770,3 +1050,20 @@ if (!window.magnosResizeInitialized) {
     });
   });
 }
+
+// Splashes inspired by Minecraft... or Terraria?
+const splashes = [
+  "Opposites attract!",
+  "Why so negative?",
+  "Right-hand rule!",
+  "From the North Pole.",
+  "See what sticks.",
+  "Electron-ic Boogaloo!",
+  "Sticky situations ahoy!",
+  "It's a polarizing subject.",
+  "Things could go south from here.",
+  "Like attracts unlike.",
+  "Zip Zap Zop!",
+  "Buff magnet rise!"
+];
+document.title = splashes[Math.floor(Math.random() * splashes.length)];
