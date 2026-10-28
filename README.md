@@ -5,7 +5,7 @@ Welcome! Here you can find the code behind MagnOs right now. This operating syst
 
 MagZen is an interactive iron-filings visualizer: move your cursor across its canvas to pull the filings in, then click the filings to switch to repulsion. Click again to return to attraction, adjust the force with the strength slider, or pause and reset the filings.
 
-Disclaimer: AI was used relatively minimally for speeding up VS code editing through suggestions, as well as for debugging the icon dragging to prevent it from opening after being dragged. 
+Disclaimer: AI was used relatively minimally for speeding up VS code editing through suggestions, debugging the icon dragging to prevent it from opening, and to add trails to the MagZen filings. 
 
 ## MagnOS in Action!
 <img width="1920" height="952" alt="image" src="https://github.com/user-attachments/assets/f18b7890-7c71-4ce7-a8fa-81fdf2bda701" />
